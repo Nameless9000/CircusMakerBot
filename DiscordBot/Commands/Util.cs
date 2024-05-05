@@ -12,7 +12,7 @@ public class HelpCommand
 
         if (command.Method != null)
             foreach (var parameter in command.Parameters)
-                output += $" *<{parameter.Name}: {parameter.Type.Name}>*";
+                output += $" *<{parameter.Name}: {parameter.Type.Name}{(parameter.DefaultValue.HasValue ? " = " + parameter.DefaultValue.Value : "")}>*";
         else
             output += " *(Group)*";
 
