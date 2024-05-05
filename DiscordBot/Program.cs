@@ -54,6 +54,7 @@ namespace DiscordBot
             {
                 // Add all commands by scanning the current assembly
                 commandsExtension.AddCommands(typeof(Program).Assembly);
+
                 TextCommandProcessor textCommandProcessor = new(new()
                 {
                     // By default, the prefix will be "!"
