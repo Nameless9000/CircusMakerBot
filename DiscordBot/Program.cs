@@ -5,6 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection;
 using DSharpPlus.Commands.Processors.TextCommands;
 using DSharpPlus.Commands.Processors.TextCommands.Parsing;
+using DSharpPlus.Commands.Processors.SlashCommands;
 
 namespace DiscordBot
 {
@@ -57,14 +58,14 @@ namespace DiscordBot
 
                 TextCommandProcessor textCommandProcessor = new(new()
                 {
-                    // By default, the prefix will be "!"
-                    // However the bot will *always* respond to a direct mention
-                    // as long as the `DefaultPrefixResolver` is used
                     PrefixResolver = new DefaultPrefixResolver(command_prefix).ResolvePrefixAsync
                 });
 
+                SlashCommandProcessor slashCommandProcessor = new();
+
                 // Add text commands with a custom prefix (?ping)
                 await commandsExtension.AddProcessorsAsync(textCommandProcessor);
+                await commandsExtension.AddProcessorsAsync(slashCommandProcessor);
             }
 
             await discord.StartAsync();
