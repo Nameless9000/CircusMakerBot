@@ -41,13 +41,3 @@ public class PingCommand
     [Command("ping"), Description("Tests the bot latency")]
     public static ValueTask ExecuteAsync(CommandContext context) => context.RespondAsync($"Pong! Latency is {context.Client.Ping}ms.");
 }
-
-[Command("math")]
-public class MathCommands
-{
-    [Command("add"), Description("Add two numbers")]
-    public static ValueTask AddAsync(CommandContext context, int a, int b) => context.RespondAsync($"{a} + {b} = {a + b}");
-
-    [Command("subtract"), Description("Subtract two numbers")]
-    public static ValueTask SubtractAsync(CommandContext context, int a, int b) => context.RespondAsync($"{a} - {b} = {a - b}");
-}
