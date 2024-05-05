@@ -8,6 +8,7 @@ using DSharpPlus.CommandsNext;
 using DSharpPlus.Interactivity;
 using DSharpPlus.Interactivity.Extensions;
 using Microsoft.Extensions.Configuration;
+using System.Windows.Input;
 
 namespace DiscordBot
 {
@@ -60,7 +61,19 @@ namespace DiscordBot
                     StringPrefixes = [config.GetValue<string>("discord:CommandPrefix")], // Load the command prefix(what comes before the command, eg "!" or "/") from our config file
                 });
 
-                // TODO: Add command loading!
+                // Add command loading
+                Console.WriteLine("[info] Loading command modules..");
+
+                var type = typeof(IModule); // Get the type of our interface
+                var types = AppDomain.CurrentDomain.GetAssemblies() // Get the assemblies associated with our project
+                    .SelectMany(s => s.GetTypes()) // Get all the types
+                    .Where(p => type.IsAssignableFrom(p) && !p.IsInterface); // Filter to find any type that can be assigned to an IModule
+
+                var typeList = types as Type[] ?? types.ToArray(); // Convert to an array
+                foreach (var t in typeList)
+                    commands.RegisterCommands(t); // Loop through the list and register each command module with CommandsNext
+
+                Console.WriteLine($"[info] Loaded {typeList.Count()} modules.");
 
                 RunAsync(args).Wait();
             }
