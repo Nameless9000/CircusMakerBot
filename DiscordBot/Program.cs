@@ -45,7 +45,7 @@ namespace DiscordBot
             IReadOnlyDictionary<int, CommandsExtension> commandsExtensions = await discord.UseCommandsAsync(new CommandsConfiguration()
             {
                 ServiceProvider = serviceProvider,
-                DebugGuildId = 1235311014342295595,
+                DebugGuildId = 0,
                 RegisterDefaultCommandProcessors = true
             });
 
