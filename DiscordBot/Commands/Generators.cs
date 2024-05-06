@@ -47,6 +47,7 @@ public class GeneratorCommands
 
         if (x_size < 1 || y_size < 1 || z_size < 1)
             return context.RespondAsync("**A 3D object cannot have side that's less than 1...**");
+
         if (properties[0] > 1 || properties[0] < 0)
             return context.RespondAsync("The first property should be a 1 or a 0 specifing if it should be hollow.");
 

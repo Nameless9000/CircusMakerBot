@@ -57,7 +57,7 @@ namespace DiscordBot
             DiscordActivity activity = new()
             {
                 ActivityType = DiscordActivityType.Watching,
-                Name = "Circuit Maker 2",
+                Name = "Circuit Maker 2 Griefers",
                 StreamUrl = "https://www.roblox.com/games/6652606416/Circuit-Maker-2",
             };
 
