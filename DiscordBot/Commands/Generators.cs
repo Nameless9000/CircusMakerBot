@@ -39,7 +39,7 @@ public class BlockProvider : IChoiceProvider
 [Command("generate"), Description("Group of generator related commands")]
 public class GeneratorCommands
 {
-    [Command("cube"), Description("Generates a cube")]
+    [Command("cube"), Description("Generates a cube (first property is `hollow: 0 or 1`)")]
     public static ValueTask CubeAsync(CommandContext context, [SlashChoiceProvider<BlockProvider>] int block, int x_size, int y_size, int z_size, params byte[] properties)
     {
         if (block < 0 || block >= BlockProvider.blocks.Count)
@@ -47,68 +47,14 @@ public class GeneratorCommands
 
         if (x_size < 1 || y_size < 1 || z_size < 1)
             return context.RespondAsync("**A 3D object cannot have side that's less than 1...**");
+        if (properties[0] > 1 || properties[0] < 0)
+            return context.RespondAsync("The first property should be a 1 or a 0 specifing if it should be hollow.");
 
-        if ((x_size * y_size * z_size) > 2097152)
-            return context.RespondAsync("Requested cube is too large.");
+        bool hollow = properties[0] == 1;
 
-        Stopwatch stopwatch = new();
-        stopwatch.Start();
+        var total_blocks = hollow ? (4 + x_size) + (4 * y_size) + (4 * z_size) - 8 : x_size * y_size * z_size;
 
-        StringBuilder sb = new()
-        {
-            Capacity = 10 * x_size * y_size * z_size
-        };
-
-        string property_string = string.Join("+", properties);
-
-        for (var x = 0; x < x_size; x++)
-        {
-            for (var y = 0; y < y_size; y++)
-            {
-                for (var z = 0; z < z_size; z++)
-                {
-                    sb.Append(block);
-                    sb.Append(",,");
-                    sb.Append(x);
-                    sb.Append(',');
-                    sb.Append(y);
-                    sb.Append(',');
-                    sb.Append(z);
-                    sb.Append(',');
-                    sb.Append(property_string);
-                    sb.Append(';');
-                }
-            }
-        }
-
-        if (sb.Length > 0)
-        {
-            sb.Remove(sb.Length - 1, 1);
-            sb.Append('?');
-        }
-
-        var message_builder = new DiscordMessageBuilder();
-        message_builder.AddFile($"Cube{block}-{x_size}-{y_size}-{z_size}.txt", new MemoryStream(Encoding.UTF8.GetBytes(sb.ToString())));
-
-        stopwatch.Stop();
-
-        message_builder.Content = $"Took {stopwatch.ElapsedMilliseconds}ms";
-
-        return context.RespondAsync(message_builder);
-    }
-
-    [Command("hollow-cube"), Description("Generates a hollow cube")]
-    public static ValueTask HCubeAsync(CommandContext context, [SlashChoiceProvider<BlockProvider>] int block, int x_size, int y_size, int z_size, params byte[] properties)
-    {
-        if (block < 0 || block >= BlockProvider.blocks.Count)
-            return context.RespondAsync("Invalid block.");
-
-        if (x_size < 1 || y_size < 1 || z_size < 1)
-            return context.RespondAsync("**A 3D object cannot have side that's less than 1...**");
-
-        var total_blocks = (4 + x_size) + (4 * y_size) + (4 * z_size) - 8;
-
-        if (total_blocks > 6136)
+        if (total_blocks > (hollow ? 6136 : 1000000))
             return context.RespondAsync("Requested cube is too large.");
 
         Stopwatch stopwatch = new();
@@ -119,7 +65,7 @@ public class GeneratorCommands
             Capacity = 10 * total_blocks
         };
 
-        string property_string = string.Join("+", properties);
+        string property_string = properties.Length > 1 ? string.Join("+", properties[1..]) : "";
 
         for (var x = 0; x < x_size; x++)
         {
@@ -127,20 +73,23 @@ public class GeneratorCommands
             {
                 for (var z = 0; z < z_size; z++)
                 {
-                    if (x == 0 || x == x_size - 1 ||
+                    if (hollow && !(
+                        x == 0 || x == x_size - 1 ||
                         y == 0 || y == y_size - 1 ||
-                        z == 0 || z == z_size - 1) {
-                        sb.Append(block);
-                        sb.Append(",,");
-                        sb.Append(x);
-                        sb.Append(',');
-                        sb.Append(y);
-                        sb.Append(',');
-                        sb.Append(z);
-                        sb.Append(',');
-                        sb.Append(property_string);
-                        sb.Append(';');
-                    }
+                        z == 0 || z == z_size - 1
+                        ))
+                        continue;
+
+                    sb.Append(block);
+                    sb.Append(",,");
+                    sb.Append(x);
+                    sb.Append(',');
+                    sb.Append(y);
+                    sb.Append(',');
+                    sb.Append(z);
+                    sb.Append(',');
+                    sb.Append(property_string);
+                    sb.Append(';');
                 }
             }
         }
