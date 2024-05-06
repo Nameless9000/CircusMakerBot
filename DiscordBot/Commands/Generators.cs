@@ -52,18 +52,10 @@ public class GeneratorCommands
 
         bool hollow = properties[0] == 1;
 
-        var total_blocks = hollow ? (4 + x_size) + (4 * y_size) + (4 * z_size) - 8 : x_size * y_size * z_size;
-
-        if (total_blocks > (hollow ? 6136 : 1000000))
-            return context.RespondAsync("Requested cube is too large.");
-
         Stopwatch stopwatch = new();
         stopwatch.Start();
 
-        StringBuilder sb = new()
-        {
-            Capacity = 10 * total_blocks
-        };
+        StringBuilder sb = new();
 
         string property_string = properties.Length > 1 ? string.Join("+", properties[1..]) : "";
 
@@ -100,12 +92,19 @@ public class GeneratorCommands
             sb.Append('?');
         }
 
+        string built_string = sb.ToString();
+
+        string message_content = "";
+        if (built_string.Length > 500000)
+            message_content += "### File is too big for circuit maker 2!\n";
+
+        if (built_string.Length > 5 * 1024 * 1024)
+            return context.RespondAsync("Created file cannot be above 5MB.");
+
         var message_builder = new DiscordMessageBuilder();
-        message_builder.AddFile($"Cube{block}-{x_size}-{y_size}-{z_size}.txt", new MemoryStream(Encoding.UTF8.GetBytes(sb.ToString())));
+        message_builder.AddFile($"Cube{block}-{x_size}-{y_size}-{z_size}.txt", new MemoryStream(Encoding.UTF8.GetBytes(built_string)));
 
-        stopwatch.Stop();
-
-        message_builder.Content = $"Took {stopwatch.ElapsedMilliseconds}ms";
+        message_builder.Content = $"{message_content}Took {stopwatch.ElapsedMilliseconds}ms";
 
         return context.RespondAsync(message_builder);
     }
