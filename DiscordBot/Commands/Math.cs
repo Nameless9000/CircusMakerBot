@@ -29,7 +29,7 @@ public class MathCommands
 
             var result = Calculator.eval(ast);
 
-            return context.RespondAsync("Result: " + result.ToString());
+            return context.RespondAsync($"Result: {result}\n\n```js\n{Calculator.dump_var(ast)}```");
         } catch (Exception ex)
         {
             return context.RespondAsync("Error: " + ex.Message);

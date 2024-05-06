@@ -55,6 +55,7 @@ module Calculator =
 
         inner (Number(float (List.head tokens))) (List.tail tokens)
 
+    let dump_var x = sprintf "%A" x
 
     let tokenize (input: string) =
         let matches = Regex.Matches(input, "((?<=^|[+\-*/^|&]\*?)[+-]?([0-9]*[.])?[0-9]+)|([+\-*/^|&]\*?)")
