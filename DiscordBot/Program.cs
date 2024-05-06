@@ -5,6 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection;
 using DSharpPlus.Commands.Processors.TextCommands;
 using DSharpPlus.Commands.Processors.TextCommands.Parsing;
+using DSharpPlus.Entities;
 using DSharpPlus.Commands.Processors.SlashCommands;
 
 namespace DiscordBot
@@ -30,45 +31,38 @@ namespace DiscordBot
                 Environment.Exit(1);
             }
 
-            DiscordShardedClient discord = new (new DiscordConfiguration
+            DiscordClient discord = new (new DiscordConfiguration
             {
                 Token = token,
                 TokenType = TokenType.Bot,
                 Intents = DiscordIntents.All
             });
 
-            var serviceCollection = new ServiceCollection();
-            serviceCollection.AddSingleton(discord);
-
-            var serviceProvider = serviceCollection.BuildServiceProvider();
-
-            // Use the commands extension
-            IReadOnlyDictionary<int, CommandsExtension> commandsExtensions = await discord.UseCommandsAsync(new CommandsConfiguration()
+            CommandsExtension commandsExtension = discord.UseCommands(new CommandsConfiguration()
             {
-                ServiceProvider = serviceProvider,
-                DebugGuildId = 0,
-                RegisterDefaultCommandProcessors = true
+                ServiceProvider = new ServiceCollection().AddLogging().BuildServiceProvider()
             });
 
-            // Iterate through each Discord shard
-            foreach (CommandsExtension commandsExtension in commandsExtensions.Values)
-            {
-                // Add all commands by scanning the current assembly
-                commandsExtension.AddCommands(typeof(Program).Assembly);
+            commandsExtension.AddCommands(typeof(Program).Assembly);
 
-                TextCommandProcessor textCommandProcessor = new(new()
+            await commandsExtension.AddProcessorsAsync(
+                new TextCommandProcessor(new()
                 {
                     PrefixResolver = new DefaultPrefixResolver(command_prefix).ResolvePrefixAsync
-                });
+                }),
+                new SlashCommandProcessor()
+            );
 
-                SlashCommandProcessor slashCommandProcessor = new();
+            // Start bot
+            DiscordActivity activity = new()
+            {
+                ActivityType = DiscordActivityType.Watching,
+                Name = "Circuit Maker 2",
+                StreamUrl = "https://www.roblox.com/games/6652606416/Circuit-Maker-2",
+            };
 
-                // Add text commands with a custom prefix (?ping)
-                await commandsExtension.AddProcessorsAsync(textCommandProcessor);
-                await commandsExtension.AddProcessorsAsync(slashCommandProcessor);
-            }
+            await discord.ConnectAsync(activity, DiscordUserStatus.DoNotDisturb);
 
-            await discord.StartAsync();
             await Task.Delay(-1);
         }
     }

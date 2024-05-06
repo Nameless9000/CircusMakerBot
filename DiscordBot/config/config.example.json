@@ -1,8 +1,6 @@
 {
   "discord": {
     "token": "BOT TOKEN HERE",
-    "appId": "CLIENT ID HERE",
-    "appSecret": "CLIENT SECRET HERE",
-    "CommandPrefix": ".."
+    "CommandPrefix": "debug."
   }
 }
